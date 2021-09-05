@@ -2,12 +2,18 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "CoreMinimal.h" 
 #include "GameFramework/Character.h"
+#include "AbilitySystemInterface.h"
 #include "BattleRoyaleCharacter.generated.h"
 
-UCLASS(config=Game)
-class ABattleRoyaleCharacter : public ACharacter
+class UBR_AttributeSet;
+class UBR_AbilitySystemInterface;
+class UBR_GameplayAbility;
+class UAbilitySystemComponent;
+
+UCLASS(config = Game)
+class ABattleRoyaleCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -18,6 +24,12 @@ class ABattleRoyaleCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+public:
+	virtual void BeginPlay() override;
+
+	virtual void PossessedBy(AController* NewController) override;
+
 public:
 	ABattleRoyaleCharacter();
 
@@ -68,5 +80,25 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+
+// -- Gameplay Ability System elements --
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gameplay Ability System")
+	UAbilitySystemComponent* AbilitySystemComponent;
+
+public:
+	//References/Variables
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gameplay Ability System")
+	UBR_AttributeSet* AttributeSet;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay Ability System")
+	TArray<TSubclassOf<UBR_GameplayAbility>> StartingAbilities;
+
+public: 
+	//Functions
+	UFUNCTION(BlueprintCallable, Category = "Gameplay Ability System")
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 };
 

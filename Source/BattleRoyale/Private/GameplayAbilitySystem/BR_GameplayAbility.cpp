@@ -3,3 +3,9 @@
 
 #include "GameplayAbilitySystem/BR_GameplayAbility.h"
 
+UBR_GameplayAbility::UBR_GameplayAbility()
+{
+	AbilityInputID = EBR_AbilityInputID::None;
+	AbilityID = EBR_AbilityInputID::None;
+}
+

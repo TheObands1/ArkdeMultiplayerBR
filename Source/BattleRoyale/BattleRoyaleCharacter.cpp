@@ -8,6 +8,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameplayAbilitySystem/BR_AttributeSet.h"
+#include "GameplayAbilitySystem/BR_GameplayAbility.h"
+#include "GameplayAbilitySystem/BR_GameplayEffect.h"
+#include "AbilitySystemComponent.h"
+#include "BattleRoyale/BattleRoyale.h"
+
 
 //////////////////////////////////////////////////////////////////////////
 // ABattleRoyaleCharacter
@@ -45,6 +51,13 @@ ABattleRoyaleCharacter::ABattleRoyaleCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+
+	//Gameplay Ability System 
+	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+
+	AttributeSet = CreateDefaultSubobject<UBR_AttributeSet>(TEXT("AttributeSet"));
+
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -74,6 +87,42 @@ void ABattleRoyaleCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ABattleRoyaleCharacter::OnResetVR);
+
+	//Gameplay Ability System
+	AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent, FGameplayAbilityInputBinds("Confirm", "Cancel", "EBR_AbilityInputID", static_cast<int32>(EBR_AbilityInputID::Confirm), static_cast<int32>(EBR_AbilityInputID::Cancel)));
+}
+
+void ABattleRoyaleCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (IsValid(AbilitySystemComponent))
+	{
+		for (TSubclassOf<UBR_GameplayAbility>& CurrentAbility : StartingAbilities)
+		{
+			if (IsValid(CurrentAbility))
+			{
+				UBR_GameplayAbility* DefaultObject = CurrentAbility->GetDefaultObject<UBR_GameplayAbility>();
+				FGameplayAbilitySpec AbilitySpec(DefaultObject, 1, static_cast<int32>(DefaultObject->AbilityInputID), this);
+				AbilitySystemComponent->GiveAbility(AbilitySpec);
+			}
+
+		}
+
+		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+	}
+}
+
+void ABattleRoyaleCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	AbilitySystemComponent->RefreshAbilityActorInfo();
+}
+
+UAbilitySystemComponent* ABattleRoyaleCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
 }
 
 

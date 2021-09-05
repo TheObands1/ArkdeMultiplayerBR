@@ -22,6 +22,9 @@ class BATTLEROYALE_API UBR_AttributeSet : public UAttributeSet
 	GENERATED_BODY()
 
 public:
+
+	//Health
+
 	UPROPERTY(BlueprintReadOnly, Category = "Health")
 	FGameplayAttributeData Health;
 	ATTRIBUTE_ACCESSORS(UBR_AttributeSet, Health);
@@ -33,7 +36,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Health")
 	FGameplayAttributeData HealthRegen;
 	ATTRIBUTE_ACCESSORS(UBR_AttributeSet, HealthRegen);
-
+	// Mana
 	UPROPERTY(BlueprintReadOnly, Category = "Mana")
 	FGameplayAttributeData Mana;
 	ATTRIBUTE_ACCESSORS(UBR_AttributeSet, Mana);
@@ -45,6 +48,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Mana")
 	FGameplayAttributeData ManaRegen;
 	ATTRIBUTE_ACCESSORS(UBR_AttributeSet, ManaRegen);
+
+	//Stamina
 
 	UPROPERTY(BlueprintReadOnly, Category = "Stamina")
 	FGameplayAttributeData Stamina;
