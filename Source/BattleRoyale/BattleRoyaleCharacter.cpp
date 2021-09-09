@@ -13,6 +13,7 @@
 #include "GameplayAbilitySystem/BR_GameplayEffect.h"
 #include "AbilitySystemComponent.h"
 #include "BattleRoyale/BattleRoyale.h"
+#include "Components/CapsuleComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -51,6 +52,15 @@ ABattleRoyaleCharacter::ABattleRoyaleCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+
+	MeleeRightFootSocketName = "AbilityRightFootSocket";
+
+	MeleeRightFootComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("MeleeLeftFootComponent"));
+	MeleeRightFootComponent->SetupAttachment(GetMesh(), MeleeRightFootSocketName);
+	MeleeRightFootComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	MeleeRightFootComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+
 
 	//Gameplay Ability System 
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));

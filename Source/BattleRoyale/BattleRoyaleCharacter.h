@@ -11,6 +11,7 @@ class UBR_AttributeSet;
 class UBR_AbilitySystemInterface;
 class UBR_GameplayAbility;
 class UAbilitySystemComponent;
+class UCapsuleComponent;
 
 UCLASS(config = Game)
 class ABattleRoyaleCharacter : public ACharacter, public IAbilitySystemInterface
@@ -24,6 +25,14 @@ class ABattleRoyaleCharacter : public ACharacter, public IAbilitySystemInterface
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UCapsuleComponent* MeleeRightFootComponent;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Melee Abilities")
+	FName MeleeRightFootSocketName;
 
 public:
 	virtual void BeginPlay() override;
