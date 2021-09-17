@@ -58,9 +58,8 @@ ABattleRoyaleCharacter::ABattleRoyaleCharacter()
 	MeleeRightFootComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("MeleeLeftFootComponent"));
 	MeleeRightFootComponent->SetupAttachment(GetMesh(), MeleeRightFootSocketName);
 	MeleeRightFootComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	MeleeRightFootComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECR_Overlap);
 	MeleeRightFootComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-
 
 	//Gameplay Ability System 
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
@@ -121,6 +120,9 @@ void ABattleRoyaleCharacter::BeginPlay()
 
 		AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	}
+
+	MeleeRightFootComponent->OnComponentBeginOverlap.AddDynamic(this, &ABattleRoyaleCharacter::OnLightingSlashAbilityOverlap);
+
 }
 
 void ABattleRoyaleCharacter::PossessedBy(AController* NewController)
@@ -197,3 +199,23 @@ void ABattleRoyaleCharacter::MoveRight(float Value)
 		AddMovementInput(Direction, Value);
 	}
 }
+
+// ================================ Custom Functions =========================================
+
+void ABattleRoyaleCharacter::OnLightingSlashAbilityOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (IsValid(OtherActor) && OtherActor != this)
+	{
+		ABattleRoyaleCharacter* PossibleBattleRoyaleCharacter = Cast<ABattleRoyaleCharacter>(OtherActor);
+		if (IsValid(PossibleBattleRoyaleCharacter) && OtherActor != this)
+		{
+			BP_OnLightingSlashAbilityOverlap(OtherActor);
+		}
+	}
+}
+
+void ABattleRoyaleCharacter::SetMeleeRightFootComponentCollision(ECollisionEnabled::Type NewCollisionState)
+{
+	MeleeRightFootComponent->SetCollisionEnabled(NewCollisionState);
+}
+

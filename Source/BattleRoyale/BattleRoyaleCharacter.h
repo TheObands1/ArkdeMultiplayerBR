@@ -90,6 +90,18 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+// -- Custom Variables and functions //
+
+protected:
+	UFUNCTION()
+	void OnLightingSlashAbilityOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnLightingSlashAbilityOverlap(AActor* OverlappedActor);
+
+public:
+	void SetMeleeRightFootComponentCollision(ECollisionEnabled::Type NewCollisionState);
+
 
 // -- Gameplay Ability System elements --
 
