@@ -51,6 +51,9 @@ protected:
 	UFUNCTION()
 	void DetectCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_ApplyGameplayEffectToHitActor(AActor* HittedActor);
+	
 	void PlayDestructionSound(FVector SoundLocation);
 
 	void PlayProjectileSound();

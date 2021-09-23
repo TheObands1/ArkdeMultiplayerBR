@@ -99,6 +99,8 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_OnLightingSlashAbilityOverlap(AActor* OverlappedActor);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_ApplyGameplayEffectToSelf();
 public:
 	void SetMeleeRightFootComponentCollision(ECollisionEnabled::Type NewCollisionState);
 

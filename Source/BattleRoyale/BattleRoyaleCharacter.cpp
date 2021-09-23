@@ -122,6 +122,7 @@ void ABattleRoyaleCharacter::BeginPlay()
 	}
 
 	MeleeRightFootComponent->OnComponentBeginOverlap.AddDynamic(this, &ABattleRoyaleCharacter::OnLightingSlashAbilityOverlap);
+	BP_ApplyGameplayEffectToSelf();
 
 }
 

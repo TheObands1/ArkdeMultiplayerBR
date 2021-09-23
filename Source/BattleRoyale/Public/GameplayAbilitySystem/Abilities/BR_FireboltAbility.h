@@ -18,5 +18,6 @@ class BATTLEROYALE_API UBR_FireboltAbility : public UBR_GameplayAbility
 	GENERATED_BODY()
 
 
+
 	
 };

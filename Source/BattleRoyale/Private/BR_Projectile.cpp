@@ -48,6 +48,7 @@ void ABR_Projectile::DetectOverlappingCollision(UPrimitiveComponent* OverlappedC
 		{
 			if (PossibleBattleRoyaleCharacter != GetInstigator())
 			{
+				BP_ApplyGameplayEffectToHitActor(PossibleBattleRoyaleCharacter);
 				DestroyProjectile(SweepResult.ImpactPoint);
 			}
 		}
