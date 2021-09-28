@@ -210,7 +210,8 @@ void ABattleRoyaleCharacter::OnLightingSlashAbilityOverlap(UPrimitiveComponent* 
 		ABattleRoyaleCharacter* PossibleBattleRoyaleCharacter = Cast<ABattleRoyaleCharacter>(OtherActor);
 		if (IsValid(PossibleBattleRoyaleCharacter) && OtherActor != this)
 		{
-			BP_OnLightingSlashAbilityOverlap(OtherActor);
+			BP_OnLightingSlashAbilityOverlap(PossibleBattleRoyaleCharacter);
+			BP_ApplyLightingSlashDamage(PossibleBattleRoyaleCharacter);
 		}
 	}
 }

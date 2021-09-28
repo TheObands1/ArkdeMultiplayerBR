@@ -28,6 +28,8 @@ ABR_Projectile::ABR_Projectile()
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 
+	DoesProjectileApplyDoT = false;
+
 }
 
 // Called when the game starts or when spawned
@@ -49,6 +51,11 @@ void ABR_Projectile::DetectOverlappingCollision(UPrimitiveComponent* OverlappedC
 			if (PossibleBattleRoyaleCharacter != GetInstigator())
 			{
 				BP_ApplyGameplayEffectToHitActor(PossibleBattleRoyaleCharacter);
+
+				if (DoesProjectileApplyDoT)
+				{
+					BP_ApplyDamageOverTimeToHitActor(PossibleBattleRoyaleCharacter);
+				}
 				DestroyProjectile(SweepResult.ImpactPoint);
 			}
 		}

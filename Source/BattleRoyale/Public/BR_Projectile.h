@@ -31,6 +31,10 @@ public:
 	UParticleSystem* ExplosionEffect;
 
 protected:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage Over Time")
+	bool DoesProjectileApplyDoT;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	USoundCue* DestroyingSound;
 
@@ -53,6 +57,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void BP_ApplyGameplayEffectToHitActor(AActor* HittedActor);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_ApplyDamageOverTimeToHitActor(AActor* HittedActor);
 	
 	void PlayDestructionSound(FVector SoundLocation);
 
