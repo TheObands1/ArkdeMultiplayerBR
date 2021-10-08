@@ -29,5 +29,10 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_CheckSwitchHasAuthority();
+
+	UFUNCTION(BlueprintCallable)
+	void DestroyOnStart();
 
 };

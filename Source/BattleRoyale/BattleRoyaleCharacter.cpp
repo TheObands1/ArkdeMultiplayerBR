@@ -14,6 +14,7 @@
 #include "AbilitySystemComponent.h"
 #include "BattleRoyale/BattleRoyale.h"
 #include "Components/CapsuleComponent.h"
+#include "Core/BR_PlayerState.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -62,9 +63,14 @@ ABattleRoyaleCharacter::ABattleRoyaleCharacter()
 	MeleeRightFootComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	//Gameplay Ability System 
-	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	//AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	//AttributeSet = CreateDefaultSubobject<UBR_AttributeSet>(TEXT("AttributeSet"));
+    //AbilitySystemComponent->SetIsReplicated(true);
+	//AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 
-	AttributeSet = CreateDefaultSubobject<UBR_AttributeSet>(TEXT("AttributeSet"));
+	IsInputBound = false;
+	HaveAbilitiesBeenGiven = false;
+	HaveEffectsBeenGiven = false;
 
 
 }
@@ -75,6 +81,8 @@ ABattleRoyaleCharacter::ABattleRoyaleCharacter()
 void ABattleRoyaleCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Set up gameplay key bindings
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
@@ -91,35 +99,20 @@ void ABattleRoyaleCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ABattleRoyaleCharacter::LookUpAtRate);
 
 	// handle touch devices
+	/*
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &ABattleRoyaleCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &ABattleRoyaleCharacter::TouchStopped);
 
-	// VR headset functionality
+	VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ABattleRoyaleCharacter::OnResetVR);
+	*/
 
-	//Gameplay Ability System
-	AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent, FGameplayAbilityInputBinds("Confirm", "Cancel", "EBR_AbilityInputID", static_cast<int32>(EBR_AbilityInputID::Confirm), static_cast<int32>(EBR_AbilityInputID::Cancel)));
+
 }
 
 void ABattleRoyaleCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if (IsValid(AbilitySystemComponent))
-	{
-		for (TSubclassOf<UBR_GameplayAbility>& CurrentAbility : StartingAbilities)
-		{
-			if (IsValid(CurrentAbility))
-			{
-				UBR_GameplayAbility* DefaultObject = CurrentAbility->GetDefaultObject<UBR_GameplayAbility>();
-				FGameplayAbilitySpec AbilitySpec(DefaultObject, 1, static_cast<int32>(DefaultObject->AbilityInputID), this);
-				AbilitySystemComponent->GiveAbility(AbilitySpec);
-			}
-
-		}
-
-		AbilitySystemComponent->InitAbilityActorInfo(this, this);
-	}
 
 	MeleeRightFootComponent->OnComponentBeginOverlap.AddDynamic(this, &ABattleRoyaleCharacter::OnLightingSlashAbilityOverlap);
 	BP_ApplyGameplayEffectToSelf();
@@ -130,12 +123,92 @@ void ABattleRoyaleCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	AbilitySystemComponent->RefreshAbilityActorInfo();
+	ABR_PlayerState* MyPlayerState = GetPlayerState<ABR_PlayerState>();
+
+	if (IsValid(MyPlayerState))
+	{
+		AbilitySystemComponent = MyPlayerState->GetAbilitySystemComponent();
+		MyPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(MyPlayerState, this);
+		AttributeSet = MyPlayerState->GetAttributeSet();
+		SetupAbilities();
+		SetupEffects();
+	}
 }
 
 UAbilitySystemComponent* ABattleRoyaleCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
+}
+
+void ABattleRoyaleCharacter::SetupGASInputs()
+{
+	if (!IsInputBound && IsValid(AbilitySystemComponent) && IsValid(InputComponent))
+	{
+		//Gameplay Ability System
+		AbilitySystemComponent->BindAbilityActivationToInputComponent(InputComponent, FGameplayAbilityInputBinds("Confirm", "Cancel", "EBR_AbilityInputID", static_cast<int32>(EBR_AbilityInputID::Confirm), static_cast<int32>(EBR_AbilityInputID::Cancel)));
+		IsInputBound = true;
+	}
+}
+
+void ABattleRoyaleCharacter::SetupAbilities()
+{
+	if (!(GetLocalRole() == ENetRole::ROLE_Authority) || !IsValid(AbilitySystemComponent) || HaveAbilitiesBeenGiven)
+	{
+		return;
+	}
+
+	for (TSubclassOf<UBR_GameplayAbility>& CurrentAbility : StartingAbilities)
+	{
+		if (IsValid(CurrentAbility))
+		{
+			UBR_GameplayAbility* DefaultObject = CurrentAbility->GetDefaultObject<UBR_GameplayAbility>();
+			FGameplayAbilitySpec AbilitySpec(DefaultObject, 1, static_cast<int32>(DefaultObject->AbilityInputID), this);
+			AbilitySystemComponent->GiveAbility(AbilitySpec);
+		}
+	}
+
+	HaveAbilitiesBeenGiven = true;
+}
+
+void ABattleRoyaleCharacter::SetupEffects()
+{
+	if (!(GetLocalRole() == ENetRole::ROLE_Authority) || !IsValid(AbilitySystemComponent) || HaveEffectsBeenGiven)
+	{
+		return;
+	}
+
+	FGameplayEffectContextHandle EffectContextHandle = AbilitySystemComponent->MakeEffectContext();
+	EffectContextHandle.AddSourceObject(this);
+
+	for (TSubclassOf<UBR_GameplayEffect>& CurrentEffect : StartingEffects)
+	{
+		if (IsValid(CurrentEffect))
+		{
+			FGameplayEffectSpecHandle NewHandle = AbilitySystemComponent->MakeOutgoingSpec(CurrentEffect, 1.f, EffectContextHandle);
+			
+			if (NewHandle.IsValid())
+			{
+				FActiveGameplayEffectHandle ActiveGEHandle = AbilitySystemComponent->ApplyGameplayEffectSpecToTarget(*NewHandle.Data.Get(), GetAbilitySystemComponent());
+			}
+		}
+	}
+
+	HaveEffectsBeenGiven = true;
+}
+
+void ABattleRoyaleCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	ABR_PlayerState* MyPlayerState = GetPlayerState<ABR_PlayerState>();
+
+	if (IsValid(MyPlayerState))
+	{
+		AbilitySystemComponent = MyPlayerState->GetAbilitySystemComponent();
+		MyPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(MyPlayerState, this);
+		AttributeSet = MyPlayerState->GetAttributeSet();
+		SetupGASInputs();
+	}
 }
 
 
@@ -219,5 +292,9 @@ void ABattleRoyaleCharacter::OnLightingSlashAbilityOverlap(UPrimitiveComponent* 
 void ABattleRoyaleCharacter::SetMeleeRightFootComponentCollision(ECollisionEnabled::Type NewCollisionState)
 {
 	MeleeRightFootComponent->SetCollisionEnabled(NewCollisionState);
+}
+
+void ABattleRoyaleCharacter::Die()
+{
 }
 

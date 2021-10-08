@@ -10,6 +10,7 @@
 class UBR_AttributeSet;
 class UBR_AbilitySystemInterface;
 class UBR_GameplayAbility;
+class UBR_GameplayEffect;
 class UAbilitySystemComponent;
 class UCapsuleComponent;
 
@@ -92,6 +93,7 @@ public:
 
 // -- Custom Variables and functions //
 
+
 protected:
 	UFUNCTION()
 	void OnLightingSlashAbilityOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -107,7 +109,6 @@ protected:
 public:
 	void SetMeleeRightFootComponentCollision(ECollisionEnabled::Type NewCollisionState);
 
-
 // -- Gameplay Ability System elements --
 
 public:
@@ -122,9 +123,28 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay Ability System")
 	TArray<TSubclassOf<UBR_GameplayAbility>> StartingAbilities;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay Ability System")
+	TArray<TSubclassOf<UBR_GameplayEffect>> StartingEffects;
+
+	bool IsInputBound;
+
+	bool HaveAbilitiesBeenGiven;
+
+	bool HaveEffectsBeenGiven;
+
 public: 
 	//Functions
 	UFUNCTION(BlueprintCallable, Category = "Gameplay Ability System")
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	void SetupGASInputs();
+
+	void SetupAbilities();
+
+	void SetupEffects();
+
+	virtual void OnRep_PlayerState() override;
+
+	void Die();
 };
 

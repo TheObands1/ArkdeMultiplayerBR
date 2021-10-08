@@ -4,6 +4,8 @@
 #include "GameplayAbilitySystem/BR_AttributeSet.h"
 #include "GameplayEffect.h"
 #include "GameplayEffectExtension.h"
+#include "AttributeSet.h"
+#include "Net/UnrealNetwork.h"
 
 UBR_AttributeSet::UBR_AttributeSet()
 {
@@ -73,4 +75,67 @@ void UBR_AttributeSet::AdjustAttributeForMaxChange(FGameplayAttributeData& Affec
 		float NewDelta = CurrentMaxValue > 0.0f ? ((CurrentValue * NewMaxValue / CurrentMaxValue) - CurrentValue) : NewMaxValue;
 		AbilityComponent->ApplyModToAttributeUnsafe(AffectedAttributeProperty, EGameplayModOp::Additive, NewDelta);
 	}
+}
+
+void UBR_AttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBR_AttributeSet, Health, OldHealth);
+}
+
+void UBR_AttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBR_AttributeSet, MaxHealth, OldMaxHealth);
+}
+
+void UBR_AttributeSet::OnRep_HealthRegen(const FGameplayAttributeData& OldHealthRegen)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBR_AttributeSet, HealthRegen, OldHealthRegen);
+}
+
+void UBR_AttributeSet::OnRep_Mana(const FGameplayAttributeData& OldMana)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBR_AttributeSet, Mana, OldMana);
+}
+
+
+void UBR_AttributeSet::OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBR_AttributeSet, MaxMana, OldMaxMana);
+}
+
+void UBR_AttributeSet::OnRep_ManaRegen(const FGameplayAttributeData& OldManaRegen)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBR_AttributeSet, ManaRegen, OldManaRegen);
+}
+
+void UBR_AttributeSet::OnRep_Stamina(const FGameplayAttributeData& OldStamina)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBR_AttributeSet, Stamina, OldStamina);
+}
+
+void UBR_AttributeSet::OnRep_MaxStamina(const FGameplayAttributeData& OldMaxStamina)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBR_AttributeSet, MaxStamina, OldMaxStamina);
+}
+
+void UBR_AttributeSet::OnRep_StaminaRegen(const FGameplayAttributeData& OldStaminaRegen)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBR_AttributeSet, StaminaRegen, OldStaminaRegen);
+}
+
+void UBR_AttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(UBR_AttributeSet, Health, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBR_AttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBR_AttributeSet, HealthRegen, COND_None, REPNOTIFY_Always);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(UBR_AttributeSet, Mana, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBR_AttributeSet, MaxMana, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBR_AttributeSet, ManaRegen, COND_None, REPNOTIFY_Always);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(UBR_AttributeSet, Stamina, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBR_AttributeSet, MaxStamina, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBR_AttributeSet, StaminaRegen, COND_None, REPNOTIFY_Always);
 }

@@ -16,7 +16,12 @@ ABR_DecorativeElement::ABR_DecorativeElement()
 void ABR_DecorativeElement::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	BP_CheckSwitchHasAuthority();
+}
+
+void ABR_DecorativeElement::DestroyOnStart()
+{
 	int randomInteger = FMath::RandRange(0, 100);
 
 	if (randomInteger <= DestroyOnStartProbability)
