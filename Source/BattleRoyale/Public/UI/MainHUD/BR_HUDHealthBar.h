@@ -11,6 +11,7 @@
  */
 
 class UBR_AttributeSet;
+class ABattleRoyaleCharacter;
 
 UCLASS()
 class BATTLEROYALE_API UBR_HUDHealthBar : public UUserWidget
@@ -31,6 +32,9 @@ protected:
 	FLinearColor EmptyHealthColor;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Setup")
+	ABattleRoyaleCharacter* BattleRoyaleCharacterReference;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Setup")
 	UBR_AttributeSet* CharacterAttributeSetReference;
 
 protected:
@@ -38,5 +42,9 @@ protected:
 	void InitializeWidget();
 
 	UFUNCTION()
-	void UpdateHealth();
+	void UpdateHealth(float CurrentHealth, float MaxHealth);
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void SetCharacterReference(ABattleRoyaleCharacter* NewReference){ BattleRoyaleCharacterReference = NewReference; };
 };

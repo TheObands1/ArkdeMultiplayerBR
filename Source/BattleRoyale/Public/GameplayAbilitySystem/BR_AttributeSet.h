@@ -13,6 +13,7 @@
 		GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 		GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName) 
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnResourceChangedSignature, float, CurrentValue, float, MaxValue);
 /**
  * 
  */
@@ -64,6 +65,14 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Stamina", ReplicatedUsing = OnRep_StaminaRegen)
 	FGameplayAttributeData StaminaRegen;
 	ATTRIBUTE_ACCESSORS(UBR_AttributeSet, StaminaRegen);
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnResourceChangedSignature OnHealthChangedDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnResourceChangedSignature OnManaChangedDelegate;
+
 public:
 	UBR_AttributeSet();
 

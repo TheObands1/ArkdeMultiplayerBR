@@ -11,6 +11,7 @@ class USphereComponent;
 class UParticleSystemComponent;
 class UParticleSystem;
 class USoundCue;
+class ABattleRoyaleCharacter;
 
 UCLASS()
 class BATTLEROYALE_API ABR_Projectile : public AActor
@@ -41,9 +42,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	USoundCue* ProjectileSound;
 
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Range")
+	float Range;
+
 public:	
 	// Sets default values for this actor's properties
 	ABR_Projectile();
+
+	UFUNCTION(NetMulticast, WithValidation, Reliable)
+	void Multicast_IgnoreActor(ABattleRoyaleCharacter* CharacterToIgnore);
 
 protected:
 	// Called when the game starts or when spawned

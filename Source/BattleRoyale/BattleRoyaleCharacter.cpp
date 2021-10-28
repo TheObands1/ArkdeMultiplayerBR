@@ -68,9 +68,9 @@ ABattleRoyaleCharacter::ABattleRoyaleCharacter()
     //AbilitySystemComponent->SetIsReplicated(true);
 	//AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 
-	IsInputBound = false;
-	HaveAbilitiesBeenGiven = false;
-	HaveEffectsBeenGiven = false;
+	bIsInputBound = false;
+	bHaveAbilitiesBeenGiven = false;
+	bHaveEffectsBeenGiven = false;
 
 
 }
@@ -107,7 +107,7 @@ void ABattleRoyaleCharacter::SetupPlayerInputComponent(class UInputComponent* Pl
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ABattleRoyaleCharacter::OnResetVR);
 	*/
 
-
+	SetupGASInputs();
 }
 
 void ABattleRoyaleCharacter::BeginPlay()
@@ -115,7 +115,7 @@ void ABattleRoyaleCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	MeleeRightFootComponent->OnComponentBeginOverlap.AddDynamic(this, &ABattleRoyaleCharacter::OnLightingSlashAbilityOverlap);
-	BP_ApplyGameplayEffectToSelf();
+	//BP_ApplyGameplayEffectToSelf();
 
 }
 
@@ -130,6 +130,8 @@ void ABattleRoyaleCharacter::PossessedBy(AController* NewController)
 		AbilitySystemComponent = MyPlayerState->GetAbilitySystemComponent();
 		MyPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(MyPlayerState, this);
 		AttributeSet = MyPlayerState->GetAttributeSet();
+		AttributeSet->OnHealthChangedDelegate.AddDynamic(this, &ABattleRoyaleCharacter::OnCharacterHealthResourceChanged);
+		AttributeSet->OnManaChangedDelegate.AddDynamic(this, &ABattleRoyaleCharacter::OnCharacterManaResourceChanged);
 		SetupAbilities();
 		SetupEffects();
 	}
@@ -142,17 +144,17 @@ UAbilitySystemComponent* ABattleRoyaleCharacter::GetAbilitySystemComponent() con
 
 void ABattleRoyaleCharacter::SetupGASInputs()
 {
-	if (!IsInputBound && IsValid(AbilitySystemComponent) && IsValid(InputComponent))
+	if (!bIsInputBound && IsValid(AbilitySystemComponent) && IsValid(InputComponent))
 	{
 		//Gameplay Ability System
 		AbilitySystemComponent->BindAbilityActivationToInputComponent(InputComponent, FGameplayAbilityInputBinds("Confirm", "Cancel", "EBR_AbilityInputID", static_cast<int32>(EBR_AbilityInputID::Confirm), static_cast<int32>(EBR_AbilityInputID::Cancel)));
-		IsInputBound = true;
+		bIsInputBound = true;
 	}
 }
 
 void ABattleRoyaleCharacter::SetupAbilities()
 {
-	if (!(GetLocalRole() == ENetRole::ROLE_Authority) || !IsValid(AbilitySystemComponent) || HaveAbilitiesBeenGiven)
+	if (!(GetLocalRole() == ENetRole::ROLE_Authority) || !IsValid(AbilitySystemComponent) || bHaveAbilitiesBeenGiven)
 	{
 		return;
 	}
@@ -167,12 +169,12 @@ void ABattleRoyaleCharacter::SetupAbilities()
 		}
 	}
 
-	HaveAbilitiesBeenGiven = true;
+	bHaveAbilitiesBeenGiven = true;
 }
 
 void ABattleRoyaleCharacter::SetupEffects()
 {
-	if (!(GetLocalRole() == ENetRole::ROLE_Authority) || !IsValid(AbilitySystemComponent) || HaveEffectsBeenGiven)
+	if (!(GetLocalRole() == ENetRole::ROLE_Authority) || !IsValid(AbilitySystemComponent) || bHaveEffectsBeenGiven)
 	{
 		return;
 	}
@@ -193,7 +195,7 @@ void ABattleRoyaleCharacter::SetupEffects()
 		}
 	}
 
-	HaveEffectsBeenGiven = true;
+	bHaveEffectsBeenGiven = true;
 }
 
 void ABattleRoyaleCharacter::OnRep_PlayerState()
@@ -207,6 +209,8 @@ void ABattleRoyaleCharacter::OnRep_PlayerState()
 		AbilitySystemComponent = MyPlayerState->GetAbilitySystemComponent();
 		MyPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(MyPlayerState, this);
 		AttributeSet = MyPlayerState->GetAttributeSet();
+		AttributeSet->OnHealthChangedDelegate.AddDynamic(this, &ABattleRoyaleCharacter::OnCharacterHealthResourceChanged);
+		AttributeSet->OnManaChangedDelegate.AddDynamic(this, &ABattleRoyaleCharacter::OnCharacterManaResourceChanged);
 		SetupGASInputs();
 	}
 }
@@ -297,4 +301,25 @@ void ABattleRoyaleCharacter::SetMeleeRightFootComponentCollision(ECollisionEnabl
 void ABattleRoyaleCharacter::Die()
 {
 }
+
+void ABattleRoyaleCharacter::OnCharacterHealthResourceChanged(float CurrentHealth, float MaxHealth)
+{
+	Client_OnHealthChanged(CurrentHealth, MaxHealth);
+}
+
+void ABattleRoyaleCharacter::Client_OnHealthChanged_Implementation(float CurrentHealth, float MaxHealth)
+{
+	OnCharacterHealthChangedDelegate.Broadcast(CurrentHealth, MaxHealth);
+}
+
+void ABattleRoyaleCharacter::OnCharacterManaResourceChanged(float CurrentMana, float MaxMana)
+{
+	Client_OnManaChanged(CurrentMana, MaxMana);
+}
+
+void ABattleRoyaleCharacter::Client_OnManaChanged_Implementation(float CurrentMana, float MaxMana)
+{
+	OnCharacterManaChangedDelegate.Broadcast(CurrentMana, MaxMana);
+}
+
 

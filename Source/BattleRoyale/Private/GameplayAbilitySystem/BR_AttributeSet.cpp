@@ -48,12 +48,14 @@ void UBR_AttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbac
 	{
 		Health.SetCurrentValue(FMath::Clamp(Health.GetCurrentValue(), 0.0f, MaxHealth.GetCurrentValue()));
 		Health.SetBaseValue(FMath::Clamp(Health.GetBaseValue(), 0.0f, MaxHealth.GetCurrentValue()));
+		OnHealthChangedDelegate.Broadcast(Health.GetCurrentValue(), MaxHealth.GetCurrentValue());
 		UE_LOG(LogTemp, Warning, TEXT("Current Health: %f"), Health.GetCurrentValue());
 	}
 	else if (Data.EvaluatedData.Attribute.GetUProperty() == FindFieldChecked<FProperty>(UBR_AttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UBR_AttributeSet, Mana)))
 	{
 		Mana.SetCurrentValue(FMath::Clamp(Mana.GetCurrentValue(), 0.0f, MaxMana.GetCurrentValue()));
 		Mana.SetBaseValue(FMath::Clamp(Mana.GetBaseValue(), 0.0f, MaxMana.GetCurrentValue()));
+		OnManaChangedDelegate.Broadcast(Mana.GetCurrentValue(), MaxHealth.GetCurrentValue());
 		UE_LOG(LogTemp, Warning, TEXT("Current Mana: %f"), Mana.GetCurrentValue());
 	}
 	else if (Data.EvaluatedData.Attribute.GetUProperty() == FindFieldChecked<FProperty>(UBR_AttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UBR_AttributeSet, Stamina)))

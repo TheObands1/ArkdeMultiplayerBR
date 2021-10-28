@@ -7,6 +7,8 @@
 #include "AbilitySystemInterface.h"
 #include "BattleRoyaleCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnCharacterResourceChangedSignature, float, CurrentValue, float, MaxValue);
+
 class UBR_AttributeSet;
 class UBR_AbilitySystemInterface;
 class UBR_GameplayAbility;
@@ -126,11 +128,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay Ability System")
 	TArray<TSubclassOf<UBR_GameplayEffect>> StartingEffects;
 
-	bool IsInputBound;
+	bool bIsInputBound;
 
-	bool HaveAbilitiesBeenGiven;
+	bool bHaveAbilitiesBeenGiven;
 
-	bool HaveEffectsBeenGiven;
+	bool bHaveEffectsBeenGiven;
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnCharacterResourceChangedSignature OnCharacterHealthChangedDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnCharacterResourceChangedSignature OnCharacterManaChangedDelegate;
 
 public: 
 	//Functions
@@ -146,5 +155,16 @@ public:
 	virtual void OnRep_PlayerState() override;
 
 	void Die();
-};
 
+	UFUNCTION()
+	void OnCharacterHealthResourceChanged(float CurrentHealth, float MaxHealth);
+
+	UFUNCTION(Client, Reliable)
+	void Client_OnHealthChanged(float CurrentHealth, float MaxHealth);
+
+	UFUNCTION()
+	void OnCharacterManaResourceChanged(float CurrentMana, float MaxMana);
+
+	UFUNCTION(Client, Reliable)
+	void Client_OnManaChanged(float CurrentMana, float MaxMana);
+};

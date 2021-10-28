@@ -3,17 +3,18 @@
 
 #include "UI/MainHUD/BR_HUDHealthBar.h"
 #include "GameplayAbilitySystem/BR_AttributeSet.h"
+#include "BattleRoyale/BattleRoyaleCharacter.h"
 
 void UBR_HUDHealthBar::InitializeWidget()
 {
-	UpdateHealth();
+	if (IsValid(BattleRoyaleCharacterReference))
+	{
+		BattleRoyaleCharacterReference->OnCharacterHealthChangedDelegate.AddDynamic(this, &UBR_HUDHealthBar::UpdateHealth);
+	}
 }
 
-void UBR_HUDHealthBar::UpdateHealth()
+void UBR_HUDHealthBar::UpdateHealth(float CurrentHealth, float MaxHealth)
 {
-	if (IsValid(CharacterAttributeSetReference))
-	{
-		HealthPercent = (CharacterAttributeSetReference->Health.GetCurrentValue()) / (CharacterAttributeSetReference->MaxHealth.GetCurrentValue());
-		HealthColor = FMath::Lerp(EmptyHealthColor, FullHealthColor, HealthPercent);
-	}
+	HealthPercent = CurrentHealth / MaxHealth;
+	HealthColor = FMath::Lerp(EmptyHealthColor, FullHealthColor, HealthPercent);
 }

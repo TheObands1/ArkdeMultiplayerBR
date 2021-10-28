@@ -21,7 +21,7 @@ ABR_Projectile::ABR_Projectile()
 	CollisionDetectorComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	CollisionDetectorComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
 	CollisionDetectorComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
-	CollisionDetectorComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	CollisionDetectorComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 	
 	ParticleSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent"));
 	ParticleSystemComponent->SetupAttachment(RootComponent);
@@ -32,39 +32,55 @@ ABR_Projectile::ABR_Projectile()
 
 }
 
+
+void ABR_Projectile::Multicast_IgnoreActor_Implementation(ABattleRoyaleCharacter* CharacterToIgnore)
+{
+	CollisionDetectorComponent->IgnoreActorWhenMoving(CharacterToIgnore, true);
+}
+
+bool ABR_Projectile::Multicast_IgnoreActor_Validate(ABattleRoyaleCharacter* CharacterToIgnore)
+{
+	return true;
+}
+
+
 // Called when the game starts or when spawned
 void ABR_Projectile::BeginPlay()
 {
 	Super::BeginPlay();
-	CollisionDetectorComponent->OnComponentBeginOverlap.AddDynamic(this, &ABR_Projectile::DetectOverlappingCollision);
+	//CollisionDetectorComponent->OnComponentBeginOverlap.AddDynamic(this, &ABR_Projectile::DetectOverlappingCollision);
 	CollisionDetectorComponent->OnComponentHit.AddDynamic(this, &ABR_Projectile::DetectCollisionHit);
 	
 }
 
 void ABR_Projectile::DetectOverlappingCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (IsValid(OtherActor) && OtherActor != this)
-	{
-		ABattleRoyaleCharacter* PossibleBattleRoyaleCharacter = Cast<ABattleRoyaleCharacter>(OtherActor);
-		if (IsValid(PossibleBattleRoyaleCharacter))
-		{
-			if (PossibleBattleRoyaleCharacter != GetInstigator())
-			{
-				BP_ApplyGameplayEffectToHitActor(PossibleBattleRoyaleCharacter);
 
-				if (DoesProjectileApplyDoT)
-				{
-					BP_ApplyDamageOverTimeToHitActor(PossibleBattleRoyaleCharacter);
-				}
-				DestroyProjectile(SweepResult.ImpactPoint);
-			}
-		}
-	}
 }
 
 void ABR_Projectile::DetectCollisionHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	DestroyProjectile(Hit.ImpactPoint);
+	
+	if (IsValid(OtherActor) && OtherActor != GetInstigator())
+	{
+		if (GetLocalRole() == ENetRole::ROLE_Authority)
+		{
+			ABattleRoyaleCharacter* PossibleBattleRoyaleCharacter = Cast<ABattleRoyaleCharacter>(OtherActor);
+			if (IsValid(PossibleBattleRoyaleCharacter))
+			{
+				if (PossibleBattleRoyaleCharacter != GetInstigator())
+				{
+					BP_ApplyGameplayEffectToHitActor(PossibleBattleRoyaleCharacter);
+
+					if (DoesProjectileApplyDoT)
+					{
+						BP_ApplyDamageOverTimeToHitActor(PossibleBattleRoyaleCharacter);
+					}
+				}
+			}
+		}
+		DestroyProjectile(Hit.ImpactPoint);
+	}
 }
 
 void ABR_Projectile::PlayDestructionSound(FVector SoundLocation)
