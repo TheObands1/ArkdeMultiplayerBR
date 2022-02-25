@@ -64,6 +64,7 @@ void UBRGA_Firebolt::EventReceived(FGameplayTag EventTag, FGameplayEventData Eve
 
 		FTransform SpawnTransform = PossibleCharacter->GetMesh()->GetSocketTransform(AbilitySocketName);
 		SpawnTransform.SetRotation(ProjectileRotation.Quaternion());
+		SpawnTransform.SetScale3D(FVector::OneVector);
 
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

@@ -5,6 +5,7 @@
 #include "GameplayAbilitySystem/BR_AttributeSet.h"
 #include "AbilitySystemComponent.h"
 #include "BattleRoyale/BattleRoyaleCharacter.h"
+#include "GameplayEffectExtension.h"
 
 ABR_PlayerState::ABR_PlayerState()
 {
@@ -57,13 +58,21 @@ float ABR_PlayerState::GetHealthRegen() const
 
 void ABR_PlayerState::OnHealthChanged(const FOnAttributeChangeData& Data)
 {
-	if (IsValid(AbilitySystemComponent) && !IsAlive())
+	if (IsValid(AbilitySystemComponent) && !IsAlive() && GetLocalRole() == ROLE_Authority)
 	{
 		ABattleRoyaleCharacter* PossibleBRCharacter = Cast<ABattleRoyaleCharacter>(GetPawn());
 
 		if (IsValid(PossibleBRCharacter))
 		{
-			PossibleBRCharacter->Die();
+			AActor* KillerActor = Data.GEModData->EffectSpec.GetEffectContext().GetEffectCauser();
+			if (IsValid(KillerActor))
+			{
+				ABattleRoyaleCharacter* KillerCharacter = Cast<ABattleRoyaleCharacter>(KillerActor);
+				if (IsValid(KillerCharacter))
+				{
+					PossibleBRCharacter->Server_Die(KillerCharacter);
+				}
+			}
 		}
 	}
 }

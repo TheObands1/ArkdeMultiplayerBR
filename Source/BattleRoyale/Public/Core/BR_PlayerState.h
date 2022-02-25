@@ -22,6 +22,14 @@ class BATTLEROYALE_API ABR_PlayerState : public APlayerState, public IAbilitySys
 {
 	GENERATED_BODY()
 
+public:
+	//Win Condition
+	UPROPERTY(BlueprintReadOnly, Category = "Win Condition")
+	int KillCount;
+
+	UFUNCTION(Category = "Win Condition")
+	void ScoreKill() { KillCount += 1; };
+
 	// -- Gameplay Ability System elements --
 
 public:

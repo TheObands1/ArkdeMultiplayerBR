@@ -15,6 +15,8 @@ class UBR_GameplayAbility;
 class UBR_GameplayEffect;
 class UAbilitySystemComponent;
 class UCapsuleComponent;
+class UAnimMontage;
+class UGameplayEffect;
 
 UCLASS(config = Game)
 class ABattleRoyaleCharacter : public ACharacter, public IAbilitySystemInterface
@@ -128,11 +130,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay Ability System")
 	TArray<TSubclassOf<UBR_GameplayEffect>> StartingEffects;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	TSubclassOf<UGameplayEffect> DeathEffectClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	UAnimMontage* DeathMontage1;
+
+	UPROPERTY(EditDefaultsOnly)
+	UAnimMontage* DeathMontage2;
+
 	bool bIsInputBound;
 
 	bool bHaveAbilitiesBeenGiven;
 
 	bool bHaveEffectsBeenGiven;
+
+	bool bIsCharacterDead;
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -154,7 +167,8 @@ public:
 
 	virtual void OnRep_PlayerState() override;
 
-	void Die();
+	UFUNCTION(Server, Reliable)
+	void Server_Die(ABattleRoyaleCharacter* KillerCharacter);
 
 	UFUNCTION()
 	void OnCharacterHealthResourceChanged(float CurrentHealth, float MaxHealth);
@@ -167,4 +181,7 @@ public:
 
 	UFUNCTION(Client, Reliable)
 	void Client_OnManaChanged(float CurrentMana, float MaxMana);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_OnDeath();
 };

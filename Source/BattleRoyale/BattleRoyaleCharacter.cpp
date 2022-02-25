@@ -15,6 +15,8 @@
 #include "BattleRoyale/BattleRoyale.h"
 #include "Components/CapsuleComponent.h"
 #include "Core/BR_PlayerState.h"
+#include "Animation/AnimMontage.h"
+#include "Core/BR_GameModeBase.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -71,7 +73,7 @@ ABattleRoyaleCharacter::ABattleRoyaleCharacter()
 	bIsInputBound = false;
 	bHaveAbilitiesBeenGiven = false;
 	bHaveEffectsBeenGiven = false;
-
+	bIsCharacterDead = false;
 
 }
 
@@ -298,8 +300,41 @@ void ABattleRoyaleCharacter::SetMeleeRightFootComponentCollision(ECollisionEnabl
 	MeleeRightFootComponent->SetCollisionEnabled(NewCollisionState);
 }
 
-void ABattleRoyaleCharacter::Die()
+void ABattleRoyaleCharacter::Server_Die_Implementation(ABattleRoyaleCharacter* KillerCharacter)
 {
+	if (IsValid(KillerCharacter)) 
+	{
+		if (bIsCharacterDead)
+		{
+			return;
+		}
+
+		bIsCharacterDead = true;
+
+		if (IsValid(DeathEffectClass))
+		{
+			FGameplayEffectContextHandle EffectContext;
+			AbilitySystemComponent->ApplyGameplayEffectToSelf(DeathEffectClass->GetDefaultObject<UGameplayEffect>(), 1.0f, EffectContext);
+
+		}
+
+		ABR_PlayerState* KillerPlayerState = Cast<ABR_PlayerState>(KillerCharacter->GetPlayerState());
+
+		if (IsValid(KillerPlayerState))
+		{
+			KillerPlayerState->ScoreKill();
+		}
+	}
+
+
+	ABR_GameModeBase* WorldGameMode = Cast<ABR_GameModeBase>(GetWorld()->GetAuthGameMode());
+
+	if (IsValid(WorldGameMode))
+	{
+		WorldGameMode->PlayerIsKilled(GetController());
+	}
+
+	Multicast_OnDeath();
 }
 
 void ABattleRoyaleCharacter::OnCharacterHealthResourceChanged(float CurrentHealth, float MaxHealth)
@@ -315,6 +350,27 @@ void ABattleRoyaleCharacter::Client_OnHealthChanged_Implementation(float Current
 void ABattleRoyaleCharacter::OnCharacterManaResourceChanged(float CurrentMana, float MaxMana)
 {
 	Client_OnManaChanged(CurrentMana, MaxMana);
+}
+
+void ABattleRoyaleCharacter::Multicast_OnDeath_Implementation()
+{
+	if (IsValid(DeathMontage1) && IsValid(DeathMontage2))
+	{
+		float ProbabilityOfPlayingMontage1 = FMath::FRandRange(0.0f, 1.0f);
+		
+		if (ProbabilityOfPlayingMontage1 > 0.5f)
+		{
+			PlayAnimMontage(DeathMontage1);
+		}
+		else
+		{
+			PlayAnimMontage(DeathMontage2);
+		}
+	}
+	else
+	{
+		Destroy();
+	}
 }
 
 void ABattleRoyaleCharacter::Client_OnManaChanged_Implementation(float CurrentMana, float MaxMana)

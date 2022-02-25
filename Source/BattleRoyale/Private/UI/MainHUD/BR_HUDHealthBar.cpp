@@ -7,6 +7,7 @@
 
 void UBR_HUDHealthBar::InitializeWidget()
 {
+	HealthPercent = 1.0f;
 	if (IsValid(BattleRoyaleCharacterReference))
 	{
 		BattleRoyaleCharacterReference->OnCharacterHealthChangedDelegate.AddDynamic(this, &UBR_HUDHealthBar::UpdateHealth);

@@ -1,0 +1,1 @@
+“D:\Program Files\Epic Games\UE_4.26\Engine\Binaries\Win64\UE4Editor.exe” “D:\ArkdeProyects\ArkdeMultiplayerBR\BattleRoyale.uproject”-game -log -WINDOWED -ResX=720 -ResY=480
